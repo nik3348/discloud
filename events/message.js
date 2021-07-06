@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { prefix } = require('./config.json');
+const { prefix } = require('../config.json');
 
 module.exports = {
 	name: 'message',
@@ -7,8 +7,15 @@ module.exports = {
 		console.log(`${message.author.tag} in #${message.channel.name} sent: ${message.content}`);
 		if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-		const { cooldowns } = client;
+		const args = message.content.slice(prefix.length).trim().split(/ +/);
+		const commandName = args.shift().toLowerCase();
 
+		if (!client.commands.has(commandName)) return;
+
+		const command = client.commands.get(commandName)
+		|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+		const { cooldowns } = client;
 		if (!cooldowns.has(command.name)) {
 			cooldowns.set(command.name, new Discord.Collection());
 		}
@@ -28,14 +35,6 @@ module.exports = {
 
 		timestamps.set(message.author.id, now);
 		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
-		const args = message.content.slice(prefix.length).trim().split(/ +/);
-		const commandName = args.shift().toLowerCase();
-
-		if (!client.commands.has(commandName)) return;
-
-		const command = client.commands.get(commandName)
-		|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
 		if (!command) return;
 
@@ -61,7 +60,7 @@ module.exports = {
 		}
 
 		try {
-			command.execute(message, args);
+			command.execute(message, args, client);
 		}
 		catch (error) {
 			console.error(error);
