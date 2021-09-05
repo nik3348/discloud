@@ -1,7 +1,6 @@
 const dotenv = require('dotenv');
 const fs = require('fs');
 const Discord = require('discord.js');
-const { TOKEN } = require('./config.json');
 
 dotenv.config();
 
@@ -29,4 +28,4 @@ for (const file of eventFiles) {
 	}
 }
 
-client.login(TOKEN);
+client.login(process.env.TOKEN);
